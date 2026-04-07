@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note Taking App</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen active" style="z-index: 200;">
+        <h1 id="authTitle" style="color:#007bff">Login to Professional Notes</h1>
+        <div id="loginFields">
+            <input id="loginInput" placeholder="Username or Email" />
+            <input id="passInput" type="password" placeholder="Password" />
+            <button onclick="login()" style="width:100%">Login</button>
+        </div>
+        <div id="signupFields" style="display:none">
+            <input id="regUsername" placeholder="Username" />
+            <input id="regEmail" placeholder="Email" />
+            <input id="regFullName" placeholder="Full Name" />
+            <input id="regPass" type="password" placeholder="Password" />
+            <button onclick="register()" style="width:100%; background:#28a745">Create Account</button>
+        </div>
+        <button id="authToggle" onclick="toggleAuthMode()" style="background:none; color:#007bff; border:none; text-decoration:underline;">
+            Don't have an account? Sign Up
+        </button>
+    </div>
+
+    <div id="appContent" class="app-layout" style="display:none">
+        <!-- Sidebar Toggle Button -->
+        <button id="sidebarToggle" class="sidebar-toggle-btn" onclick="toggleSidebar()">
+            <i class="fa fa-bars"></i>
+        </button>
+
+        <!-- Sidebar -->
+        <div id="mainSidebar" class="sidebar">
+            <div class="sidebar-drag-handle" id="sidebarDragHandle">
+                <i class="fa fa-ellipsis-v"></i><i class="fa fa-ellipsis-v"></i>
+            </div>
+            <div class="sidebar-header">
+                <h2>Notes Pro</h2>
+                <div id="userInfo" class="user-chip"></div>
+            </div>
+            
+            <div class="search-sidebar">
+                <input id="searchInput" placeholder="Search..." onkeyup="searchNotes()" />
+                <select id="searchBy" onchange="searchNotes()">
+                    <option value="all">All</option>
+                    <option value="title">Title</option>
+                    <option value="content">Content</option>
+                    <option value="tags">Tags</option>
+                    <option value="category">Category</option>
+                </select>
+            </div>
+
+            <button class="add-btn" onclick="openEditor()">+ New Note</button>
+
+            <nav class="sidebar-nav">
+                <a href="#" onclick="goBack()"><i class="fa fa-home"></i> Home</a>
+                <a href="#" onclick="showArchive()"><i class="fa fa-archive"></i> Archive</a>
+                <a href="#" onclick="showCategories()"><i class="fa fa-folder"></i> Categories</a>
+                <a href="#" onclick="showHistory()"><i class="fa fa-history"></i> History</a>
+                <a href="#" onclick="showHelp()"><i class="fa fa-question-circle"></i> Help</a>
+                <a id="converterLink" href="#" onclick="showConverter()" style="display:none"><i class="fa fa-key"></i> Pass Converter</a>
+                <a href="#" onclick="syncWithGmail()"><i class="fa fa-sync"></i> Sync Gmail</a>
+                <a href="#" onclick="toggleDarkMode()"><i class="fa fa-moon"></i> Dark Mode</a>
+                <hr>
+                <a href="#" onclick="logout()" class="logout-link"><i class="fa fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div id="mainScreen">
+                <div id="pinnedSection">
+                    <h2 class="section-title">Pinned</h2>
+                    <div id="pinnedNotes"></div>
+                </div>
+                <h2 class="section-title">Others</h2>
+                <div id="notes"></div>
+            </div>
+
+            <div id="archiveSection" style="display:none">
+                <h2 class="section-title">Archive</h2>
+                <div id="archiveNotes"></div>
+            </div>
+
+            <div id="categorySection" style="display:none">
+                <h2 class="section-title">Categories</h2>
+                <div class="category-input-group">
+                    <input id="newCategory" placeholder="New Category Name" />
+                    <button onclick="addCategory()">Add</button>
+                </div>
+                <ul id="categoryList" class="category-list"></ul>
+            </div>
+
+            <div id="historySection" style="display:none">
+                <h2 class="section-title">Recent Activity</h2>
+                <div id="historyList" class="history-list"></div>
+            </div>
+
+            <div id="categoryNotes" style="display:none">
+                <h2 id="categoryNotesTitle" class="section-title"></h2>
+                <div id="categoryNotesList"></div>
+            </div>
+
+            <div id="helpSection" style="display:none">
+                <h2 id="helpTitle" class="section-title"></h2>
+                <div id="helpContent" class="help-grid"></div>
+            </div>
+
+            <div id="adminSection" style="display:none">
+                <h2 class="section-title">Developer Dashboard (yettie)</h2>
+                <div id="userList" class="user-grid"></div>
+            </div>
+
+            <div id="converterSection" style="display:none">
+                <h2 class="section-title">Developer Power: Pass Converter</h2>
+                <div class="help-box" style="max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <p style="color: #666; margin-bottom: 20px;">As a powerful entity, you can revert any encrypted password back to its original plain text.</p>
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <input id="encryptInput" placeholder="Paste Encrypted Password Here..." style="padding: 12px; border: 2px solid #eee; border-radius: 8px; font-family: monospace;" />
+                        <button onclick="convertPass()" style="background: #007bff; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Revert to Original</button>
+                        <div id="convertResult" style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff; display: none;">
+                            <strong>Original Password:</strong> <span id="originalPass" style="font-family: monospace; color: #d63384; font-size: 1.2em;"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="adminViewingBanner" style="display:none; background:#ffc107; padding:10px; text-align:center; font-weight:bold; color:#000; border-radius:8px; margin-bottom:15px;">
+                Currently Viewing: <span id="viewingUserName"></span> 
+                <button onclick="exitImpersonation()" style="margin-left:10px; background:#000; color:#fff; padding:5px 10px; border-radius:5px;">Exit View</button>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        <div id="commentModal" class="screen">
+            <h2>Comments</h2>
+            <div id="commentList" class="comment-area"></div>
+            <textarea id="commentInput" placeholder="Write a comment..." rows="3"></textarea>
+            <button onclick="addComment()">Add Comment</button>
+            <button onclick="closeModal('commentModal')">Close</button>
+        </div>
+
+        <div id="tagModal" class="screen">
+            <h2>Tags</h2>
+            <div id="noteTags" class="tag-area"></div>
+            <input id="tagInput" placeholder="Tag name..." />
+            <button onclick="submitTag()">Add Tag</button>
+            <button onclick="closeModal('tagModal')">Close</button>
+        </div>
+
+        <div id="reminderModal" class="screen">
+            <h2>Set Reminder</h2>
+            <input type="datetime-local" id="reminderTime" />
+            <button onclick="submitReminder()">Set Reminder</button>
+            <button onclick="closeModal('reminderModal')">Close</button>
+        </div>
+
+        <div id="shareModal" class="screen">
+            <h2>Share Note</h2>
+            <p>Internal App Share:</p>
+            <input id="shareUsername" placeholder="Target Username" />
+            <select id="sharePermission">
+                <option value="read">Read Only</option>
+                <option value="write">Read/Write</option>
+            </select>
+            <button onclick="submitShare()">Share to User</button>
+            <hr>
+            <p>Gmail Share (Internet Required):</p>
+            <input id="shareEmail" placeholder="email@example.com" />
+            <button onclick="shareViaEmail()" style="background:#28a745">Send to Email</button>
+            <button onclick="closeModal('shareModal')">Close</button>
+        </div>
+
+        <div id="userEditModal" class="screen compact-modal">
+            <h2>Edit User Account</h2>
+            <input id="editUsername" placeholder="Username" />
+            <input id="editEmail" placeholder="Email" />
+            <input id="editFullName" placeholder="Full Name" />
+            <input id="editPassword" type="password" placeholder="New Password (leave blank to keep current)" />
+            <div class="editor-actions">
+                <button onclick="saveUserEdit()" class="save-btn">Save Changes</button>
+                <button onclick="closeModal('userEditModal')" class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+
+        <div id="editorScreen" class="screen">
+            <h2 id="editorTitle">Add Note</h2>
+            <input id="noteTitle" placeholder="Title" />
+            <textarea id="noteInput" rows="10" placeholder="Write your note content here..."></textarea>
+            <select id="noteCategory"></select>
+            <label class="checkbox-label"><input type="checkbox" id="notePinned" /> Pin this note</label>
+            <div class="editor-actions">
+                <button onclick="saveNote()" class="save-btn">Save Note</button>
+                <button onclick="closeEditor()" class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
